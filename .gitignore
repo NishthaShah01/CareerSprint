@@ -21,7 +21,7 @@ backend/uploads/*
 !backend/uploads/.gitkeep
 uploads/
 
-# ─── Temporary Files & Test PDFs in root ───
+# ─── Temporary Files & Documents ───
 *.jpg
 *.jpeg
 *.png
@@ -31,6 +31,7 @@ uploads/
 *.pdf
 !CAREERSPRINT_PROJECT_DOCUMENTATION.md
 *.docx
+*.pptx
 
 # ─── Scratch & Logs ───
 scratch/

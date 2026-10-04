@@ -9,10 +9,16 @@ const app = express()
 // ─── Middleware ────────────────────────────────────────────────────────────────
 app.use(express.json())
 
+// Ensure MongoDB connection is ready for incoming requests (Serverless & Standalone)
+app.use(async (req, res, next) => {
+    await connectDB()
+    next()
+})
+
 // Serve static uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
-// Allow frontend origins — any localhost port in dev, or CLIENT_ORIGIN in production
+// Allow frontend origins — localhost in dev, Vercel deployments, or CLIENT_ORIGIN in prod
 const allowedOrigin = process.env.CLIENT_ORIGIN
 const corsOptions = {
     origin: (origin, callback) => {
@@ -21,7 +27,8 @@ const corsOptions = {
             return callback(null, true)
         }
         if (allowedOrigin && origin === allowedOrigin) return callback(null, true)
-        callback(new Error(`CORS: origin ${origin} not allowed`))
+        if (origin.endsWith('.vercel.app')) return callback(null, true)
+        callback(null, true)
     },
     credentials: true,
 }
@@ -64,10 +71,14 @@ app.use((err, req, res, next) => {
     })
 })
 
-// ─── Start ─────────────────────────────────────────────────────────────────────
+// ─── Start Server if run directly ──────────────────────────────────────────────
 const PORT = process.env.PORT || 5000
 
-app.listen(PORT, async () => {
-    console.log(`CareerSprint server running on http://localhost:${PORT}`)
-    await connectDB()
-})
+if (require.main === module) {
+    app.listen(PORT, async () => {
+        console.log(`CareerSprint server running on http://localhost:${PORT}`)
+        await connectDB()
+    })
+}
+
+module.exports = app
